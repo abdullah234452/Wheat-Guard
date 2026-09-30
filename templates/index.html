@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>Wheat Guard</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+
+
+<body>
+
+    <div class="container">
+
+        <h1>Wheat Guard</h1>
+
+        <p class="subtitle">
+            Crop Health Prediction
+        </p>
+
+
+        <div class="form-group">
+
+            <label>Crop</label>
+
+            <select id="crop">
+
+                <option value="">Select Crop</option>
+
+                {% for crop in crops %}
+                    <option value="{{ crop }}">{{ crop }}</option>
+                {% endfor %}
+            </select>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>Soil Type</label>
+
+            <select id="soil">
+
+                <option value="">Select Soil</option>
+
+                {% for soil in soils %}
+                    <option value="{{ soil }}">{{ soil }}</option>
+                {% endfor %}
+
+            </select>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>Seedling Stage</label>
+
+            <select id="stage">
+
+                <option value="">Select Stage</option>
+
+                {% for stage in stages %}
+                    <option value="{{ stage }}">{{ stage }}</option>
+                {% endfor %}
+
+            </select>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>MOI</label>
+
+            <input
+                type="number"
+                id="moi"
+                placeholder="Enter MOI"
+            >
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>Temperature</label>
+
+            <input
+                type="number"
+                id="temp"
+                placeholder="Enter temperature"
+            >
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>Humidity</label>
+
+            <input
+                type="number"
+                id="humidity"
+                placeholder="Enter humidity"
+            >
+
+        </div>
+
+
+        <button onclick="checkHealth()">
+
+            Check Crop Health
+
+        </button>
+
+
+        <div id="message"></div>
+
+        <div id="result"></div>
+
+
+    </div>
+
+
+    <script>
+
+        function checkHealth() {
+
+            const crop = document.getElementById("crop").value;
+            const soil = document.getElementById("soil").value;
+            const stage = document.getElementById("stage").value;
+
+            const moi = document.getElementById("moi").value;
+            const temp = document.getElementById("temp").value;
+            const humidity = document.getElementById("humidity").value;
+
+
+            const message = document.getElementById("message");
+            const result = document.getElementById("result");
+
+
+            message.innerHTML = "";
+            result.innerHTML = "";
+
+
+            // Check empty fields
+
+            if (
+                crop === "" ||
+                soil === "" ||
+                stage === "" ||
+                moi === "" ||
+                temp === "" ||
+                humidity === ""
+            ) {
+
+                message.innerHTML = "Please fill all fields.";
+
+                return;
+
+            }
+
+
+            message.innerHTML = "Checking crop health...";
+
+
+            fetch("/predict", {
+
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+
+                    crop: crop,
+                    soil: soil,
+                    stage: stage,
+                    moi: moi,
+                    temp: temp,
+                    humidity: humidity
+
+                })
+
+            })
+
+
+            .then(response => response.json())
+
+
+            .then(data => {
+
+                message.innerHTML = "";
+
+
+                if (data.success) {
+
+                    result.innerHTML =
+                        "Crop Health: <strong>" +
+                        data.crop_health +
+                        "</strong>";
+
+                }
+
+                else {
+
+                    message.innerHTML =
+                        "Error: " + data.error;
+
+                }
+
+            })
+
+
+            .catch(error => {
+
+                message.innerHTML =
+                    "Something went wrong.";
+
+                console.log(error);
+
+            });
+
+        }
+
+    </script>
+
+
+</body>
+
+</html>
